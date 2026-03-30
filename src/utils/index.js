@@ -387,4 +387,22 @@ export function camelCase(str) {
 export function isNumberStr(str) {
   return /^[+-]?(0|([1-9]\d*))(\.\d+)?$/g.test(str)
 }
- 
+
+
+/* 去除对象空属性 */
+/**
+ * @param {string} obj
+ * @returns {Object}
+ */
+export function deleteObjNull(obj) {
+  const newPar = {};
+  for (const key in obj) {
+    if (
+      (obj[key] === 0 || obj[key]) &&
+      obj[key].toString().replace(/(^\s*)|(\s*$)/g, "") !== ""
+    ) {
+      newPar[key] = obj[key];
+    }
+  }
+  return newPar;
+}
