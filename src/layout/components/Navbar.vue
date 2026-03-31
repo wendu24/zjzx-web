@@ -98,7 +98,7 @@ export default {
         type: 'warning'
       }).then(() => {
         this.$store.dispatch('LogOut').then(() => {
-          location.href = '/ruoyi-vue-web/index';
+          location.href = '/index';
         })
       }).catch(() => {});
     }
