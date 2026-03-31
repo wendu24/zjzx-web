@@ -8,6 +8,11 @@ export default {
     PageTable,
     PageCenterBtn
   },
+  data() {
+    return {
+      search: true
+    }
+  },
   computed: {
     params() {
       return deleteObjNull(this.pageForm)

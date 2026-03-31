@@ -101,7 +101,6 @@ export default {
         pageSize: 10,
         total: 0
       },
-      search: true,
       formConfig,
       btnConfig,
       tableConfig,
