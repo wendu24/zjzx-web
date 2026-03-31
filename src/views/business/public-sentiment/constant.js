@@ -38,6 +38,6 @@ export const tableConfig = {
     { prop: 'url', label: '舆情URL', minWidth: 200 },
     { prop: 'monitor', label: '监测状态', slotName: 'monitor', width: 80 },
     { prop: 'createTime', label: '创建时间', width: 160 },
-    { prop: 'operate', fixed: 'right', label: '操作', slotName: 'operate', width: 200 },
+    { prop: 'operate', fixed: 'right', label: '操作', slotName: 'operate', minWidth: 280 },
   ]
 }

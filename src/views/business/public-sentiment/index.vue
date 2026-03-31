@@ -49,6 +49,14 @@
         <el-button
           size="mini"
           type="text"
+          icon="el-icon-view"
+          @click="onBtnClick(row, 'comment')"
+          v-hasPermi="['public-sentiment:comment']"
+          >查看评论</el-button
+        >
+        <el-button
+          size="mini"
+          type="text"
           icon="el-icon-delete"
           @click="onBtnClick(row, 'delete')"
           v-hasPermi="['public-sentiment:delete']"
@@ -60,6 +68,7 @@
     <Add ref="add" @ok="dialogMethod" />
     <Update ref="update" @ok="getList" />
     <OpinionHeat ref="opinion" />
+    <Comment ref="comment" />
   </div>
 </template>
 
@@ -72,13 +81,14 @@ import {
 import Add from '@/views/business/public-sentiment/components/add'
 import Update from '@/views/business/public-sentiment/components/update'
 import OpinionHeat from '@/views/business/public-sentiment/components/opinion-heat'
+import Comment from '@/views/business/public-sentiment/components/comment'
 
 import { deleteObjNull } from '@/utils'
 import { formConfig, tableConfig, btnConfig } from './constant'
 import mixin from '@/mixins'
 export default {
   name: 'public-sentiment-page',
-  components: { Add, Update, OpinionHeat },
+  components: { Add, Update, OpinionHeat, Comment },
   mixins: [mixin],
   data() {
     return {
@@ -162,6 +172,11 @@ export default {
       if (type === 'view') {
         this.$refs.opinion.id = row.id
         this.$refs.opinion.visible = true
+      }
+
+      if (type === 'comment') {
+        this.$refs.comment.id = row.id
+        this.$refs.comment.visible = true
       }
 
       if (type === 'delete') {

@@ -53,3 +53,11 @@ export function hotRecordMethod(id) {
   })
 }
 
+// 舆情 - 查看舆情评论
+export function viewCommentMethod(id) {
+  return request({
+    url: '/yuqing/comment/list/' + id,
+    method: 'get'
+  })
+}
+

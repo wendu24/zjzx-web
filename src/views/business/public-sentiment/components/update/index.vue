@@ -39,7 +39,7 @@
 <script>
 import { updateYuqingMethod } from '@/api/business/public-sentiment'
 export default {
-  name: 'public-sentiment-add-dialog',
+  name: 'public-sentiment-update-dialog',
   data() {
     return {
       visible: false,

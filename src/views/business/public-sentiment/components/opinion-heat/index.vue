@@ -12,7 +12,7 @@
 import { hotRecordMethod } from '@/api/business/public-sentiment'
 import * as echarts from 'echarts'
 export default {
-  name: 'public-sentiment-add-dialog',
+  name: 'public-sentiment-opinion-heat-dialog',
   data() {
     return {
       visible: false,
@@ -54,8 +54,13 @@ export default {
             type: 'category',
             data: nameArr,
             axisLabel: {
-              interval: 0, // 强制显示所有标签
-              rotate: 25 // 标签旋转45度
+              interval: function (index, value) {
+                if (index === 0 || index === nameArr.length - 1) {
+                  return true
+                }
+                return index % 20 === 0
+              },
+              rotate: 25, // 标签旋转45度
             },
             axisPointer: {
               type: 'shadow'
