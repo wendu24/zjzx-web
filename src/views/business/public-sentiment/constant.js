@@ -23,7 +23,9 @@ export const formConfig = [
 ]
 
 export const btnConfig = [
-  { icon: 'el-icon-plus', btnType: 'primary', type: 'add', label: '新增', per: 'public-sentiment:add' }
+  { icon: 'el-icon-plus', btnType: 'primary', type: 'add', label: '新增', per: 'public-sentiment:add' },
+  { icon: 'el-icon-plus', btnType: 'success', type: 'yuqing', label: '舆情抓取', per: '' },
+  { icon: 'el-icon-plus', btnType: 'info', type: 'heat', label: '热度抓取', per: '' },
 ]
 
 export const tableConfig = {

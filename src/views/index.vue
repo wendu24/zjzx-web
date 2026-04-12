@@ -125,6 +125,11 @@ export default {
   mounted() {
     this.initWebSocket()
   },
+  deactivated() {
+    if (this.socket) {
+      this.socket.close()
+    }
+  },
   beforeDestroy() {
     if (this.socket) {
       this.socket.close()

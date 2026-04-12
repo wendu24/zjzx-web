@@ -73,120 +73,166 @@
 </template>
 
 <script>
+import { listConfig, updateConfig } from "@/api/system/config";
 import {
   getYuqingListMethod,
   changeYuqingStatusMethod,
-  delYuqingMethod
-} from '@/api/business/public-sentiment'
-import Add from '@/views/business/public-sentiment/components/add'
-import Update from '@/views/business/public-sentiment/components/update'
-import OpinionHeat from '@/views/business/public-sentiment/components/opinion-heat'
-import Comment from '@/views/business/public-sentiment/components/comment'
+  delYuqingMethod,
+} from "@/api/business/public-sentiment";
+import Add from "@/views/business/public-sentiment/components/add";
+import Update from "@/views/business/public-sentiment/components/update";
+import OpinionHeat from "@/views/business/public-sentiment/components/opinion-heat";
+import Comment from "@/views/business/public-sentiment/components/comment";
 
-import { deleteObjNull } from '@/utils'
-import { formConfig, tableConfig, btnConfig } from './constant'
-import mixin from '@/mixins'
+import { deleteObjNull } from "@/utils";
+import { formConfig, tableConfig, btnConfig } from "./constant";
+import mixin from "@/mixins";
 export default {
-  name: 'public-sentiment-page',
+  name: "public-sentiment-page",
   components: { Add, Update, OpinionHeat, Comment },
   mixins: [mixin],
   data() {
     return {
       pageForm: {
-        title: '',
-        content: '',
-        company: '',
+        title: "",
+        content: "",
+        company: "",
         createTime: [],
         pageNum: 1,
         pageSize: 10,
-        total: 0
+        total: 0,
       },
       formConfig,
       btnConfig,
       tableConfig,
-      list: []
-    }
+      list: [],
+      enableCatchHot: {},
+      enableCatchWxBlog: {}
+    };
   },
   computed: {
     params() {
-      const form = deleteObjNull(this.pageForm)
+      const form = deleteObjNull(this.pageForm);
       if (form.createTime) {
-        form.createStartTime = form.createTime[0] + '00:00:00'
-        form.createEndTime = form.createTime[0] + '23:59:59'
-        delete form.createTime
+        form.createStartTime = form.createTime[0] + "00:00:00";
+        form.createEndTime = form.createTime[0] + "23:59:59";
+        delete form.createTime;
       }
-      delete form.total
-      return form
-    }
+      delete form.total;
+      return form;
+    },
   },
   created() {
-    this.getList()
+    this.getList();
+    this.getConfig()
+    this.getConfig('enableCatchHot');
   },
   methods: {
-    CenterBtnClick(type) {
-      if (type === 'add') {
-        this.$refs.add.visible = true
+    async getConfig(configKey = 'enableCatchWxBlog') {
+      const { code, rows } = await listConfig({
+        configKey,
+        pageNum: 1,
+        pageSize: 10
+      })
+      if (code === 200) {
+        this[configKey] = rows[0] || {}
+      }
+    },
+    async CenterBtnClick(type) {
+      if (type === "add") {
+        this.$refs.add.visible = true;
+      }
+
+      if (type === "yuqing") {
+        const { code } = await updateConfig({
+          configId: this.enableCatchWxBlog.configId,
+          configName: this.enableCatchWxBlog.configName,
+          configKey: "enableCatchWxBlog",
+          configValue: this.enableCatchWxBlog.configValue === '1' ? '-1' : '1',
+        });
+        if (code === 200) {
+          const title = this.enableCatchWxBlog.configValue === '-1' ? '开启' : '关闭'
+          this.enableCatchWxBlog.configValue = this.enableCatchWxBlog.configValue === '1' ? '-1' : '1'
+          this.$modal.msgSuccess(`舆情抓取${title}`);
+        }
+      }
+      if (type === "heat") {
+        const { code } = await updateConfig({
+          configId: this.enableCatchHot.configId,
+          configName: this.enableCatchHot.configName,
+          configKey: "enableCatchHot",
+          configValue: this.enableCatchHot.configValue === '1' ? '-1' : '1',
+        });
+        if (code === 200) {
+          const title2 = this.enableCatchHot.configValue === '-1' ? '开启' : '关闭'
+          this.enableCatchHot.configValue = this.enableCatchHot.configValue === '1' ? '-1' : '1'
+          this.$modal.msgSuccess(`热度抓取${title2}`);
+        }
       }
     },
 
     dialogMethod() {
-      this.pageForm.pageNum = 1
-      this.getList()
+      this.pageForm.pageNum = 1;
+      this.getList();
     },
 
     async getList() {
-      const { rows, code, total } = await getYuqingListMethod(this.params)
+      const { rows, code, total } = await getYuqingListMethod(this.params);
       if (code === 200) {
         this.list = rows.map((item) => ({
           ...item,
-          monitor: item.monitorStatus === 10
-        }))
-        this.pageForm.total = total
+          monitor: item.monitorStatus === 10,
+        }));
+        this.pageForm.total = total;
       }
     },
 
     async onChangeStatus(value, row) {
       const { code } = await changeYuqingStatusMethod({
         id: row.id,
-        monitorStatus: value ? 10 : 20
-      })
+        monitorStatus: value ? 10 : 20,
+      });
       if (code === 200) {
-        this.$modal.msgSuccess('操作成功')
-        this.getList()
+        this.$modal.msgSuccess("操作成功");
+        this.getList();
       }
     },
 
     async onBtnClick(row, type) {
-      if (type === 'update') {
-        this.$refs.update.visible = true
-        this.$refs.update.form.title = row.title
-        this.$refs.update.form.id = row.id
-        this.$refs.update.form.author = row.author
-        this.$refs.update.form.platform = row.platform
-        this.$refs.update.form.company = row.company
-        this.$refs.update.form.content = row.content
-        this.$refs.update.form.url = row.url
+      if (type === "update") {
+        this.$refs.update.visible = true;
+        this.$refs.update.form.title = row.title;
+        this.$refs.update.form.id = row.id;
+        this.$refs.update.form.author = row.author;
+        this.$refs.update.form.platform = row.platform;
+        this.$refs.update.form.company = row.company;
+        this.$refs.update.form.content = row.content;
+        this.$refs.update.form.url = row.url;
       }
 
-      if (type === 'view') {
-        this.$refs.opinion.id = row.id
-        this.$refs.opinion.visible = true
+      if (type === "view") {
+        this.$refs.opinion.id = row.id;
+        this.$refs.opinion.visible = true;
       }
 
-      if (type === 'comment') {
-        this.$refs.comment.id = row.id
-        this.$refs.comment.visible = true
+      if (type === "comment") {
+        this.$refs.comment.id = row.id;
+        this.$refs.comment.visible = true;
       }
 
-      if (type === 'delete') {
-        this.$modal.confirm('是否确认删除？').then(async function () {
-          return delYuqingMethod({ id: row.id });
-        }).then(() => {
-          this.getList();
-          this.$modal.msgSuccess("删除成功");
-        }).catch(() => {});
+      if (type === "delete") {
+        this.$modal
+          .confirm("是否确认删除？")
+          .then(async function () {
+            return delYuqingMethod({ id: row.id });
+          })
+          .then(() => {
+            this.getList();
+            this.$modal.msgSuccess("删除成功");
+          })
+          .catch(() => {});
       }
-    }
-  }
-}
+    },
+  },
+};
 </script>
