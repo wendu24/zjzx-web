@@ -6,7 +6,7 @@
         <div class="dashboard-header">
           <div class="title">
             <span class="live-dot"></span>
-            实时监控日志
+            AI思考过程
             <span
               class="connection-status"
               :class="connected ? 'online' : 'offline'"

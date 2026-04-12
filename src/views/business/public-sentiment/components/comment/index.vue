@@ -10,7 +10,7 @@
         <el-descriptions-item label="评论时间"
           >{{ item.commentTime || '-' }}</el-descriptions-item
         >
-        <el-descriptions-item label="情绪">{{ item.emotion || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="情绪">{{ item.category || '-' }}</el-descriptions-item>
         <el-descriptions-item label="评论内容"
           >{{ item.content || '-' }}</el-descriptions-item
         >
