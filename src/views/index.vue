@@ -52,10 +52,23 @@
       </div>
     </div>
     <div class="appcontainer__right">
+      <el-select
+        v-model="deviceValue"
+        placeholder="请选择设备"
+        size="small"
+      >
+        <el-option
+          v-for="item in DEVICE_OPTIONS_LIST"
+          :key="item.udid"
+          :label="item.label"
+          :value="item.udid"
+        >
+        </el-option>
+      </el-select>
       <iframe
         :src="iframeUrl"
+        class="iframe-class"
         width="100%"
-        height="100%"
         frameborder="0"
       ></iframe>
     </div>
@@ -65,6 +78,12 @@
 <script>
 import { listConfig } from '@/api/system/config'
 import { mapState } from 'vuex'
+const DEVICE_OPTIONS_LIST = [
+  { label: 'HONOR', udid: 'ASXJVB2921001717' },
+  { label: 'Xiaomi', udid: '0xUPROM666' },
+  { label: 'OPPO', udid: 'EIIRDI6TMFM7J7TW' },
+  { label: 'vivo', udid: '10CDC818KX000TA' }
+]
 export default {
   name: 'Index',
   data() {
@@ -81,7 +100,10 @@ export default {
         info: { text: 'INFO', class: 'info' },
         warn: { text: 'WARN', class: 'warn' },
         error: { text: 'ERROR', class: 'error' }
-      }
+      },
+      DEVICE_OPTIONS_LIST,
+      deviceValue: 'ASXJVB2921001717',
+      baseUrl: ''
     }
   },
   computed: {
@@ -117,6 +139,20 @@ export default {
         }
       },
       deep: false
+    },
+    deviceValue: {
+      deep: true,
+      handler(newVal, oldVal) {
+        console.log(newVal, oldVal);
+        
+        const regex = new RegExp(oldVal, 'g')
+        // const url = this.updateUdidInUrl(this.baseUrl, newVal)
+        const url = this.iframeUrl.replace(regex, newVal)
+        this.iframeUrl = ''
+        this.$nextTick(() => {
+          this.iframeUrl = url
+        })
+      }
     }
   },
   created() {
@@ -138,6 +174,7 @@ export default {
         configKey: 'phone-url'
       })
       if (code === 200) {
+        this.baseUrl = rows[0].configValue
         this.iframeUrl = rows[0].configValue
       }
     },
@@ -215,6 +252,74 @@ export default {
 
     toggleAutoScroll() {
       this.autoScroll = !this.autoScroll
+    },
+
+    /**
+     * 更新 URL 中所有 udid 参数的值（包括主 URL 和嵌套 ws URL）
+     * @param {string} urlString - 原始 URL 字符串
+     * @param {string} newUdid - 新的 udid 值
+     * @returns {string} 更新后的 URL 字符串
+     */
+    updateUdidInUrl(urlString, newUdid) {
+      try {
+        const url = new URL(urlString)
+        let hash = url.hash
+        if (!hash || hash === '#') return urlString
+
+        // 分离 hash 前缀（#! 或 #）
+        let hashContent = hash.slice(1)
+        let prefix = '#'
+        if (hashContent.startsWith('!')) {
+          prefix = '#!'
+          hashContent = hashContent.slice(1)
+        }
+
+        // 使用正则直接处理整个 hash 内容，避免 URLSearchParams 的额外编码
+        // 1. 替换外层的 udid 参数（? 或 & 后跟 udid=...）
+        let newHashContent = hashContent.replace(
+          /([?&])udid=([^&]*)/,
+          `$1udid=${newUdid}`
+        )
+
+        // 2. 处理 ws 参数：提取 ws=... 的值，然后内部替换 udid
+        // 匹配 ws=后面直到下一个 & 或结尾（注意值可能经过编码）
+        newHashContent = newHashContent.replace(
+          /ws=([^&]*)/,
+          (match, wsEncodedValue) => {
+            let decodedOnce = wsEncodedValue
+            try {
+              // 只解码一次，将 %3D 变成 =，方便匹配，但保留其他编码如 %2F
+              decodedOnce = decodeURIComponent(wsEncodedValue)
+            } catch (e) {
+              // 解码失败则保持原样
+            }
+
+            // 在解码一次的字符串中替换 udid=旧值 为 udid=新值
+            // 正则匹配 udid= 后面跟着非 & 的字符
+            let updatedInternal = decodedOnce.replace(
+              /([?&])udid=[^&]*/,
+              `$1udid=${newUdid}`
+            )
+
+            // 如果没有找到 udid 参数，则追加
+            if (!updatedInternal.includes('udid=')) {
+              const separator = updatedInternal.includes('?') ? '&' : '?'
+              updatedInternal += `${separator}udid=${newUdid}`
+            }
+
+            // 将更新后的字符串重新编码（一次），因为外层 ws 参数整体还需要再次编码
+            // 注意：这里使用 encodeURIComponent 会进行完整编码，等号会变成 %3D，这正是期望的
+            const reEncoded = encodeURIComponent(updatedInternal)
+            return `ws=${reEncoded}`
+          }
+        )
+
+        url.hash = prefix + newHashContent
+        return url.toString()
+      } catch (error) {
+        console.error('URL 处理失败', error)
+        return urlString
+      }
     }
   }
 }
@@ -446,6 +551,15 @@ export default {
     height: calc(100vh - 154px);
     background-color: #fff;
     border-radius: 8px;
+
+    ::v-deep .el-select {
+      margin-bottom: 16px;
+    }
+
+    .iframe-class {
+      /* 48 = 32 + 16 */
+      height: calc(100% - 48px);
+    }
   }
 }
 </style>
